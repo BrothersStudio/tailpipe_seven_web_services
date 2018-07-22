@@ -1,0 +1,4 @@
+boto3==1.7.58
+requests==2.18.4
+flask==1.0.2
+flask_restful==0.3.6
