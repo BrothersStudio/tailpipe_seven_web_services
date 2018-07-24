@@ -10,7 +10,6 @@ class mysqlInterview():
     logger = None
 
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
         self.create_interviews_table()
 
     def create_conn(self):
@@ -38,10 +37,10 @@ class mysqlInterview():
                 PRIMARY KEY (message_id)
                 )"""
             )
-            self.logger.info('Interviews table successfully created.')
+            logging.info('Interviews table successfully created.')
         except _mysql_exceptions.OperationalError as e:
-            self.logger.info(e)
-            self.logger.warning("Interviews table already exists, no action has been taken.")
+            logging.info(e)
+            logging.warning("Interviews table already exists, no action has been taken.")
         finally:
             conn.close()
 
@@ -54,7 +53,7 @@ class mysqlInterview():
                         VALUES (%s, %s, %s, %s, %s);""", (message_id, level, tag, user, message))
         except Exception as e:
             print(e)
-            self.logger.warning('Got Exception while inserting: {0}'.format(e))
+            logging.warning('Got Exception while inserting: {0}'.format(e))
             return False
         finally:
             conn.close()
@@ -72,12 +71,14 @@ class mysqlInterview():
             response = conn.fetchall()
 
         except Exception as e:
-            self.logger.warning('Got Exception while selecting: {0}'.format(e))
+            logging.warning('Got Exception while selecting: {0}'.format(e))
             return ()
         finally:
             conn.close()
 
-        self.logger.info('Got raw response {0} from SELECT statement'.format(response))
-        return response[0][0]
+        logging.info('Got raw response {0} from SELECT statement'.format(response))
+
+        return response[0][0] if len(response) > 0 else None
+
 
 

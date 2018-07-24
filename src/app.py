@@ -23,45 +23,45 @@ dictConfig({
 
 app = Flask(__name__)
 api = Api(app)
-app.logger.setLevel(logging.INFO)
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(name)s.%(funcName)s +%(lineno)s: %(levelname)-8s [%(process)d] %(message)s',
+                    )
 
-class interview_request(Resource):
+class InterviewRequest(Resource):
 
     @staticmethod
     def get():
-        logger = logging.getLogger(__name__)
-        logger.info("Interview Post")
+        logging.info("Interview GET")
 
-        req = request.get_json()
+        args = request.args
 
-        logger.info(req)
+        logging.info(args)
 
-        tag = req.get('tag', 'default')
-        user_id = req.get('user_id', '0000000000')
-        level_id = req.get('level_id', '0')
+        tag = args['tag'] if 'tag' in args else 'default'
+        user_id = str(args['user_id']) if 'user_id' in args else '0000000000'
+        level = str(args['level']) if 'level' in args else '0'
 
-        message = interview.get_random_response_by_tag_level(user_id, tag, level_id)
+        message = interview.get_random_response_by_tag_level(user_id, tag, level)
 
-        return Response(json.dumps({'message': message}), status=200, mimetype='application/json')
+        response = {'message': message, 'user_id': user_id, 'tag': tag, 'level': level}
+
+        return Response(json.dumps(response), status=200, mimetype='application/json')
 
     @staticmethod
     def post():
-        logger = logging.getLogger(__name__)
-        logger.info("Interview Post")
+        logging.info("Interview POST")
 
         req = request.get_json()
 
-        logger.info(req)
+        logging.info(req)
 
         tag = req.get('tag', 'default')
-        user_resp = req.get('user_resp', '')
-        level_id = req.get('level_id', '0')
+        user_resp = req.get('message', '')
+        level_id = req.get('level', '0')
         user_id = req.get('user_id', '0000000000')
 
         accepted = interview.validate_and_insert(tag, level_id, user_resp, user_id)
-
-
 
         if accepted:
             return Response(json.dumps('Post successful'), status=202, mimetype='application/json')
@@ -69,18 +69,17 @@ class interview_request(Resource):
             return Response(json.dumps('Post rejected'), status=406, mimetype='application/json')
 
 
-class health(Resource):
+class Health(Resource):
 
     @staticmethod
     def get():
-        logger = logging.getLogger(__name__)
-        logger.info("Health GET started.")
+        logging.info("Health GET started.")
 
         return Response(json.dumps("Healthy"), status=200, mimetype='application/json')
 
 
-api.add_resource(health, '/health')
-api.add_resource(interview_request, '/interview')
+api.add_resource(Health, '/health')
+api.add_resource(InterviewRequest, '/interview')
 
 
 if __name__ == '__main__':
